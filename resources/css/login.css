@@ -1,0 +1,80 @@
+@import 'bootstrap-icons/font/bootstrap-icons.css';
+@import 'tailwindcss';
+@import 'bootstrap-icons/font/bootstrap-icons.css';
+
+:root{
+    --main-color: #342743;
+    --secondary-color: #4D3A63;
+}
+
+form{
+    color: var(--color-white);
+    background-color: var(--secondary-color);
+    height: fit-content;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border-radius: 10px;
+}
+
+.form-label{
+    position: absolute;
+    top: 2px;
+    left: 10px;
+    transition: 0.4s ease-in-out;
+}
+
+input[type="text"]:focus + .form-label, 
+input[type="email"]:focus + .form-label,
+input[type="password"]:focus + .form-label, .valid{
+    font-size: 12px;
+    top: -15px;
+    transition: 0.4s ease-in-out;
+}
+
+i {
+    position: absolute;
+    right: 10px;
+    top: 5px;
+    cursor: pointer;
+}
+
+
+input[type="text"], input[type="email"], input[type="password"]{
+    width: 100%;
+    padding: 5px 10px;
+    border-bottom: var(--color-white) solid 2px;
+}
+
+input[type="text"]:focus, input[type="email"]:focus, input[type="password"]:focus{
+    outline: none;
+}
+
+input[type="checkbox"]{
+    width: 20px;
+}
+
+button {
+    cursor: pointer;
+    width: 100%;
+    border-radius: 20px;
+    padding: 10px;
+    color: var(--color-black);
+    background-color: var(--color-white);  
+    transition: 0.4s all;
+}
+
+button:hover {
+    background-color: #C798BE;
+    transition: 0.4s all;
+}
+
+.close {
+    transition: 0.8 ease-in-out;
+    height: 0 !important;
+}
+
+.top-popup{
+    top: 0;
+}

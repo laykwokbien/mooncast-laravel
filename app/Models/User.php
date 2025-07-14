@@ -18,9 +18,11 @@ class User extends Authenticatable
      * @var array<int, string>
      */
     protected $fillable = [
-        'name',
+        'nama',
         'email',
         'password',
+        'default_password',
+        'role',
     ];
 
     /**
@@ -42,4 +44,18 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
+
+    public function isData(){
+        return $this->hasOne(Siswa::class, 'id_akun', 'id');
+    }
+
+    public function getJurusanNameAttribute(){
+        $data = $this->isData;
+
+        if (!$data) return false;
+        
+        $jurusan = jurusan::where('id', $data->jurusan)->value('nama_jurusan');
+
+        return $jurusan;
+    }
 }
