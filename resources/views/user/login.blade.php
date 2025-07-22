@@ -12,7 +12,7 @@
         <div id="top-popup" class="flex flex-row justify-center text-white w-screen absolute bg-green-500 z-10 transition-all" style="height: 30px">
             {{ session('success') }}
         </div>
-    @endif
+    @endif  
 
      @if (session()->has('fail'))
         <div id="top-popup" class="flex flex-row justify-center text-white w-screen absolute bg-red-500 z-10 transition-all" style="height: 30px">

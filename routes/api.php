@@ -1,6 +1,6 @@
 <?php
 use App\Http\Controllers\API\V1\AuthController;
-use Illuminate\Http\Request;
+use App\Http\Controllers\API\V1\PredictionController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -26,10 +26,16 @@ use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function() {
     Route::prefix('auth')->group(function() {
+        Route::post("/setup", [AuthController::class, 'setup']);
         Route::post("/login", [AuthController::class, 'login']);
         Route::post("/logout", [AuthController::class, 'logout']);
         Route::post("/status", [AuthController::class, 'checkApiKey']);
         Route::post("/update", [AuthController::class, 'updateData']);
+    });
+
+    Route::prefix('ml')->group(function (){
+        Route::post('/predict', [PredictionController::class, "setup"]);
+        Route::post('/predict/get', [PredictionController::class, "getPrediction"]);
     });
 
     Route::prefix('survey')->group(function (){

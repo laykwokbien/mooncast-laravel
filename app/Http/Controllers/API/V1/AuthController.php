@@ -6,11 +6,81 @@ use App\Http\Controllers\Controller;
 use App\Models\siswa;
 use App\Models\User;
 use Auth;
+use DateTime;
+use Exception;
+use Hash;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Str;
 
 class AuthController extends Controller
 {
+    public function setup(Request $request){
+        $token = $request->input('api_token');
+        $data = $request->only(["nama", "email", "password","tanggal_lahir", "alamat"]);
+
+        $query = User::where('api_token', hash('sha256', $token));
+        if (User::where('email', $data["email"])->exists()){
+            return response()->json([
+                "valid" => false,
+                "msg" => "Email sudah digunakan",
+            ],status: 422);
+        }
+
+        if (User::where("nama", $data["nama"])->exists()){
+            return response()->json([
+                "valid" => false,
+                "msg" => "Nama sudah digunakan"
+            ], status: 422);
+        }
+       
+        if (!$query->exists()){
+            return response()->json([
+                "valid" => false,
+                "msg" => "Kredensial yang tidak dikenal",
+            ], status: 401);
+        }
+
+        if (!array_reduce($data, fn($carry, $value) => $carry && gettype($value) == "string", true)){
+            return response()->json([
+                "valid" => false,
+                "msg" => "Invalid input format"
+            ], status: 422);
+        }
+        
+        try {
+            $data["tanggal_lahir"] = Carbon::parse($data["tanggal_lahir"]);
+        } catch (Exception $e) {
+            return response()->json([
+                "valid" => false,
+                "msg" => "Format Date Invalid"
+            ], status: 422);
+        }
+
+        if (Auth::attempt(['api_token' => hash('sha256', $token), 'password' => $query->first()->default_password])){
+            
+            $user = Auth::user()->load("isData");
+            $user->nama = $data["nama"];
+            $user->email = $data["email"];
+            $user->password = bcrypt($data["password"]);
+            $user->save();
+            siswa::where('id_akun', $user->id)->update([
+                "alamat" => $data["alamat"],
+                "tanggal_lahir" => $data["tanggal_lahir"],
+            ]);
+            
+            return response()->json([
+                "valid" => true,
+                "msg" => "Berhasil untuk setup akun!",
+            ], status: 200);
+        }
+
+        return response()->json([
+            "valid" => false,
+            "msg" => "Forbidden Action Detected",
+        ], status: 403);
+    }
+
     public function checkApiKey(Request $request){
         $api = $request->input("api_key");
         if (User::where('api_token', hash('sha256', $api))->exists()){
@@ -25,12 +95,14 @@ class AuthController extends Controller
                 "msg" => "Kredensial tidak dikenal"
             ], status:401);
     }
+
     public function login(Request $request){
         $validated = $request->validate([
             "nama" => "required|string",
             "password" => "required|min:8"
         ]);
         $validated["role"] = "siswa";
+
         if (Auth::attempt($validated)){
             $user = Auth::user()->load('isData.isProximo');
 
@@ -67,12 +139,16 @@ class AuthController extends Controller
     }
     
     public function logout(Request $request){
-        if (!User::where('api_token', $request->input('api_token'))->exists){
+
+        $api_token = $request->input('api_token');
+    
+        if (!User::where('api_token', Hash("sha256", $api_token))->exists()){
             return response()->json([
                 "msg" => "Logout Gagal, Mohon coba ulang atau hubungi pihak yang bersangkutan",
             ], status: 403);
         }
-        User::where('api_token', $request->input('api_token'))->update([
+
+        User::where('api_token', Hash("sha256", $api_token))->update([
             "api_token" => null,
         ]);
 
@@ -123,6 +199,7 @@ class AuthController extends Controller
             "msg" => "Berhasil untuk menerima Survey State",
         ], status:200);
     }
+    
     
     public function updateData(Request $request){
         $data = $request->only(["nama", "email", "alamat", "tanggal_lahir", "new_password"]);
